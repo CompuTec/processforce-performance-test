@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CT_CONFIG>
+    <!--
+        CompanyDB - company database name, e.g. SBODEMOUS
+        DbServerType - for SAP HANA: dst_HANADB; for SQL 2019: dst_MSSQL2019
+        DBServer - for MS SQL Server: hostname; for SAP HANA 2.0: tenat_name@hostname:30013
+        SLDServer - SLD hostname, e.g. hostname:40000
+        Username - SAP Business One user name
+        Password - SAP Business One user password
+    -->
+    <Connection
+        CompanyDB="SBODEMOUS"
+        DbServerType="dst_HANADB"
+        DBServer="NDB@hana_host:30013"
+        SLDServer="hana_host:40000"
+        Username="manager"
+        Password="" />
+    <!-- Type: 1 - Short, 2 - Medium, 3 - Long -->
+    <Test Type="1" />
+</CT_CONFIG>

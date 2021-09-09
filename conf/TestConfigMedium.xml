@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CT_CONFIG>
+    <MasterData>
+        <!-- NumberOfItems - number of all items that will be created -->
+        <!-- NumberOfMakeItems - number of items with MRP type Make (this number should be greater or equal to NumberOfBoms in BOM element)-->
+        <!-- NumberOfItems should be les then NumberOfMakeItems-->
+        <!-- Prefix - prefix for generated items-->
+        <ItemMasterData Prefix="ACTPF_" NumberOfItems="120" NumberOfMakeItems="20" WarehouseCode="01"/>
+        <!-- NumberOfRevisions - number of revisions that will be added to each created item -->
+        <ItemDetails NumberOfRevisions="10"/>
+        <!-- NumberOfBoms - number of Bill of Materials that will be created (this number should be lowwer or equal to NumberOfMakeItems in ItemMasterData element) -->
+        <!-- NumberOfItems - number of items in Materials in BOM. This number should be lower than or equal to (NumberOfItems - NumberOfMakeItems) -->
+        <!-- WarehouseCode - Warehouse code for BOM -->
+        <!-- ItemsWarehouseCode - Warehouse code for materials -->
+        <BOM NumberOfBoms="100" NumberOfItems="20" WarehouseCode="01" ItemsWarehouseCode="01"/>
+        <!-- Prefix - prefix for generated Resources-->
+        <!-- NumberOfResources - number of resources that will be created (this number should be greater or equal to NumberOfResources in element Operation -->
+        <Resource Prefix="ACTPF_" NumberOfResources="100"/>
+        <!-- Prefix - prefix for generated operations -->
+        <!-- NumberOfOperations - number of operations that will be created (this number should be greater or equal to NumberOfOperations in element Routing -->
+        <!-- NumberOfResources - number of resources that will be added to operation (this number should be lower or equal to NumberOfResources in element Resource -->
+        <Operation Prefix="ACTPF_" NumberOfOperations="100" NumberOfResources="5"/>
+        <!-- Prefix - prefix for generated routings -->
+        <!-- NumberOfRoutings - number of routings that will be created (this number should be greater or equal to NumberOfRoutings in element ProductionProcess -->
+        <!-- NumberOfOperations - number of operations that will be added to routing (this number should be greater or equal to NumberOfOperations in element Operation -->
+        <Routing Prefix="ACTPF_" NumberOfRoutings="100" NumberOfOperations="5"/>
+        <!-- NumberOfBoms - this number should be lower or equal NumberOfBoms in element BOM -->
+        <!-- NumberOfRoutings - this number should be lowe or euqal NumberOfRoutings in element Routing-->
+        <ProductionProcess NumberOfBoms="100" NumberOfRoutings="2"/>
+    </MasterData>
+    <UI>
+    <!-- recordsToGoThrough - number of records that test will go throught. First one will be searched then next action will be used. -->
+    <!-- repeatOpenForm - number of times form will be opened and closed -->
+    
+		<!-- recordsToGoThrough should be lower or equal NumberOfItems from ItemMasterData element -->
+        <ItemDetails recordsToGoThrough="100" repeatOpenForm="100"/>
+        <!-- recordsToGoThrough should be lower or equal NumberOfBoms from BOM element -->
+        <BOM recordsToGoThrough="100" repeatOpenForm="100"/>
+        <!-- recordsToGoThrough should be lower or equal NumberOfBoms from ProductionProcess element -->
+        <ProductionProcess recordsToGoThrough="100" repeatOpenForm="100"/>
+        <!-- recordsToGoThrough should be lower or equal NumberOfResources from Resource element -->
+        <Resource recordsToGoThrough="100" repeatOpenForm="100"/>
+        <!-- recordsToGoThrough should be lower or equal NumberOfOperations from Operation element -->
+        <Operation recordsToGoThrough="100" repeatOpenForm="100"/>
+        <!-- recordsToGoThrough should be lower or equal NumberOfRoutings from Routing element -->
+        <Routing recordsToGoThrough="100" repeatOpenForm="100"/>
+    </UI>
+</CT_CONFIG>
