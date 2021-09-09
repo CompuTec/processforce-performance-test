@@ -37,7 +37,7 @@ and from SAP Business One client UI:
 * Switching between them
 
 ## Results
-Measurements are written to `Result_Enviroment.csv` and `Results_Details.csv` files.
+Measurements are written to folder RESULTS_[CurrentDate]_[CurrentTime] with two files in it: `Result_Enviroment.csv` and `Results_Details.csv`.
 
 `Result_Enviroment.csv` contains basic information about the host on which the script is run, like memory, processor, and network responses between the host, database server, and the SLD server.
 
