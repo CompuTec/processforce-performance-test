@@ -9,6 +9,11 @@ PerformanceTest is a PowerShell script that measures adding, getting, and openin
 
 Download all files from the repo to a folder on a machine where SAP Business One DI API, SAP Business One client, and CompuTec ProcessForce API are installed.
 
+## Preparation
+Create an empty SAP Business One company database and install ProcessForce in it, or use a test company database on which the test hasn't been run yet and ProcessForce is already installed.
+
+Create warehouse with code **01**.
+
 ## Settings
 In the file `conf/Connection.xml`, define the company database connection information so that the script can add through DI API objects used in the SAP Business One UI tests.
 
