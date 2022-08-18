@@ -17,6 +17,7 @@ $OperationsList = New-Object 'System.Collections.Generic.List[string]';
 $RoutingsList = New-Object 'System.Collections.Generic.List[string]';
 $ItemsDictionary.Add('MAKE', (New-Object 'System.Collections.Generic.List[psobject]'));
 $ItemsDictionary.Add('BUY', (New-Object 'System.Collections.Generic.List[psobject]'));
+$CreatedMors = New-Object 'System.Collections.Generic.List[psobject]';
 
 $connectionXMLFilePath = $PSScriptRoot + "\conf\Connection.xml";
 
@@ -913,7 +914,55 @@ function Imports($pfcCompany) {
 
 		}
 	}
+	function CreateManufacturingOrders($pfcCompany) {
+		[CTLogger] $log = New-Object CTLogger ('DI', 'Add Manufacturing Orders', $RESULT_FILE)
+		Write-Host '';
+		Write-Host 'Adding Manufacturing Orders:' -NoNewline;
+		$xmlProductionProcess = $MDConfigXml.SelectSingleNode([string]::Format("MOR"));
+		$numberOfMors = [int] $xmlProductionProcess.NumberOfMors;
+		[CTProgress] $progress = New-Object CTProgress ($numberOfMors);
+		for ($iMOR = 0; $iMOR -lt $numberOfMors; $iMOR++) {
+			try {
+				$progress.next();
+				$bomItemCode = $ItemsDictionary['MAKE'][$iMOR].ItemCode;
+				$bomRevisionCode = $ItemsDictionary['MAKE'][$iMOR].Revisions[0];
+				$log.startSubtask('Get MOR');
+				$mor = $pfcCompany.CreatePFObject([CompuTec.ProcessForce.API.Core.ObjectTypes]::ManufacturingOrder);
+				$log.endSubtask('Get MOR', 'S', '');
+			}
+			catch {
+				$err = $_.Exception.Message;
+				$log.endSubtask('Get MOR', 'F', $err);
+				continue;
+			}
+			try {
+				
+				$log.startSubtask('Add MOR');
+				$mor.U_ItemCode = $bomItemCode;
+				$mor.U_Revision = $bomRevisionCode;
+				
+				$message = 0
+				$message = $mor.Add()
+			
+				if ($message -lt 0) {  
+					$err = $pfcCompany.GetLastErrorDescription()
+					Throw [System.Exception] ($err);
+				}
+				RefreshHeader $mor;
+				$log.endSubtask('Add MOR', 'S', '');
+				$CreatedMors.Add([psobject]@{
+						Series = $mor.Series
+						DocNum = $mor.DocNum
+					});
+			}
+			catch {
+				$err = $_.Exception.Message;
+				$log.endSubtask('Add MOR', 'F', $err);
+				continue;
+			}
 
+		}
+	}
 
 	$logJobs.startSubtask('Import IMD');
 	importIMD $sapCompany
@@ -944,6 +993,10 @@ function Imports($pfcCompany) {
 	$logJobs.startSubtask('Import Production Processes');
 	ImportProductionProcesses $pfcCompany
 	$logJobs.endSubtask('Import Production Processes', 'S', '');
+
+	$logJobs.startSubtask('Import MOR');
+	CreateManufacturingOrders $pfcCompany
+	$logJobs.endSubtask('Import MOR', 'S', '');
 
 	$logJobs.endSubtask('Import', 'S', '');
 
@@ -1398,7 +1451,65 @@ function UITests() {
 			Write-Host $msg;
 		}
 	}
+	function openMORForm ($app) {
+		[CTLogger] $log = New-Object CTLogger ('UI', 'Open MOR', $RESULT_FILE)
+		Write-Host '';
+		Write-Host 'Open MOR:' -NoNewline;
+		$xmlOpenRouting = $UIConfigXml.SelectSingleNode([string]::Format("MOR"));
+		$repeatOpenForm = [int] $xmlOpenRouting.repeatOpenForm;
+			
+		[CTProgress] $progress = New-Object CTProgress ($repeatOpenForm);
+		for ($iRecord = 0; $iRecord -lt $repeatOpenForm; $iRecord++) {
+			try {
+				$progress.next();
+				$log.startSubtask('Open MOR Form');
+				$formOpenMenu = $app.Menus.Item('CT_PF_6'); 
+				$formOpenMenu.Activate();
+				$log.endSubtask('Open MOR Form', 'S', '');
+				$form = $app.Forms.ActiveForm()
+				$form.Close();
+			}
+			catch {
+				$err = $_.Exception.Message;
+				$log.endSubtask('Open MOR Form', 'F', $err);
+				continue;
+			}
+		}
+	}
 
+	function loadMORs ($app) {
+		try {
+			[CTLogger] $log = New-Object CTLogger ('UI', 'Load MOR', $RESULT_FILE)
+			Write-Host '';
+			Write-Host 'Load Routings:';
+			$xmlOpenRouting = $UIConfigXml.SelectSingleNode([string]::Format("MOR"));
+			$recordsToGoThrough = [int] $xmlOpenRouting.recordsToGoThrough;
+			$firstMOR = $CreatedMors[0];
+			$firstMORSeries = $firstMOR.Series;
+			$firstMORDocNum = $firstMOR.DocNum;
+			$firstEntityKeyValues = New-Object 'System.Collections.Generic.Dictionary[string,string]'; 
+			$firstEntityKeyValues.Add("Series", $firstMORSeries);
+			$firstEntityKeyValues.Add("5", $firstMORDocNum);
+			$menuItemName = 'CT_PF_6';
+			$subtaskNameOpen = "Open MOR Form";
+			$subtaskNameLoad = "Load MOR Data";
+			Write-Host '* Maximized:' -NoNewline;
+			setStateOfForm -app $app -menuItemName $menuItemName -maximized $true; 
+			_loadForm -app $app -stateName $FORM_STATE_MAXIMIZED -repeatOpenForm $recordsToGoThrough -menuItemName $menuItemName -log $log -subtaskNameOpen $subtaskNameOpen -subtaskNameLoad $subtaskNameLoad -firstEntityKeyValues $firstEntityKeyValues;
+	
+			Write-Host '';
+			Write-Host '* Regular:' -NoNewline;
+			setStateOfForm -app $app -menuItemName $menuItemName -maximized $false; 
+			_loadForm -app $app -stateName $FORM_STATE_REGULAR -repeatOpenForm $recordsToGoThrough -menuItemName $menuItemName -log $log -subtaskNameOpen $subtaskNameOpen -subtaskNameLoad $subtaskNameLoad -firstEntityKeyValues $firstEntityKeyValues;
+		}
+		catch {
+			$err = $_.Exception.Message;
+			$msg = [string]::Format('Unexpected exception while running Load MOR:{0}', [string]$err);
+			Write-Host $msg;
+		}
+	}
+
+	
 	openItemDetailsForm $app;
 
 	loadItemDetails $app;
@@ -1422,6 +1533,10 @@ function UITests() {
 	openRoutingForm $app;
 
 	loadRoutings $app;
+
+	openMORForm $app;
+
+	loadMORs $app;
 
 	$logJobs.endSubtask('Get', 'S', '');
 }
