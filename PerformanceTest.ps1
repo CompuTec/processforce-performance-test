@@ -142,13 +142,44 @@ function testChoosedDatabaseConfiguration($pfcCompany) {
 			Throw [System.Exception] ($err);
 		}
 	}
+	function isNumberingSharedSeriesOptionIsOn($pfcCompany) {
+		$qm = New-Object CompuTec.Core.DI.Database.QueryManager
+			$qm.SimpleTableName = "CINF";
+			$qm.SetSimpleResultFields("DocNmMtd");
+			$rs = $qm.ExecuteSimpleParameters($pfcCompany.Token);
+			if ($rs.RecordCount -gt 0) {
+				if($rs.Fields.Item("DocNmMtd").Value -eq 'Y') {
+					return $true;
+				}
+			} else {
+				Throw [System.Exception] ("Could not read configuration");
+			}
+		return $false;
+	}
 	function validateSeries($pfcCompany, $objectCode, $objectName) {
 		try {
+
+			$sharedNumbering = isNumberingSharedSeriesOptionIsOn $pfcCompany;
+
+			$whereValues = New-Object 'System.Collections.Generic.List[string]';
+			$whereFields = New-Object 'System.Collections.Generic.List[object]';
+			$whereFields.Add("IsManual");
+			$whereValues.Add('Y');
+			$whereFields.Add("Locked");
+			$whereValues.Add('N');
+			if($sharedNumbering) {
+				$whereFields.Add("SeriesType");
+				$whereValues.Add('I');
+			} else {
+				$whereFields.Add("ObjectCode");
+				$whereValues.Add($objectCode);
+			}
 			$qm = New-Object CompuTec.Core.DI.Database.QueryManager
 			$qm.SimpleTableName = "NNM1";
 			$qm.SetSimpleResultFields("Series");
-			$qm.SetSimpleWhereFields("ObjectCode", "IsManual", "Locked");
-			$rs = $qm.ExecuteSimpleParameters($pfcCompany.Token, [string]$objectCode, 'Y', 'N');
+			$qm.SetSimpleWhereFields($whereFields);
+			$rs = $qm.ExecuteSimpleParameters($pfcCompany.Token, $whereValues.ToArray());
+			
 			if ($rs.RecordCount -lt 1) {
 				Throw [System.Exception] ("Manual numbering series need to be unlocked.");
 			}
