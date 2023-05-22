@@ -1639,14 +1639,35 @@ function saveTestConfiguration() {
 	Add-Content -Path $RESULT_FILE_CONF '';
 	$progress.next();
 }
+
+function logToConsole($task, $timer) {
+	if($null -eq $timer) {
+		$timer = New-Object CTTimer;
+		Write-Host $task;
+		return $timer;
+	} else {
+		$msg = [string]::Format('{0} took: {1} s', $task, $timer.totalSeconds());
+		Write-Host $msg;
+	}
+}
+$timer = logToConsole 'Connecting to database';
 $pfcCompany = connectDI;
+logToConsole 'Connecting to database' $timer;
+
+$timer = logToConsole 'Testing database configuration';
 $configurationTest = testChoosedDatabaseConfiguration -pfcCompany $pfcCompany;
+logToConsole 'Testing database configuration' $timer;
+
 if ($configurationTest -eq $true) {
+	$timer = logToConsole 'Testing environment';
 	saveTestConfiguration ;
-	Write-Host '';
+	logToConsole 'Testing environment' $timer;
+	$timer = logToConsole 'Imporitng data';
 	Imports -pfcCompany $pfcCompany ;
-	write-host '';
+	logToConsole 'Imporitng data' $timer;
+	$timer = logToConsole 'UI Tests';
 	UITests ;
+	logToConsole 'UI Tests' $timer;
 }
 else {
 	Write-Host -BackgroundColor DarkRed -ForegroundColor White "Configuration test failed. To perform Performance Test please fix your configuration."
