@@ -1659,9 +1659,9 @@ $configurationTest = testChoosedDatabaseConfiguration -pfcCompany $pfcCompany;
 logToConsole 'Testing database configuration' $timer;
 
 if ($configurationTest -eq $true) {
-	$timer = logToConsole 'Testing enviroment';
+	$timer = logToConsole 'Testing environment';
 	saveTestConfiguration ;
-	logToConsole 'Testing enviroment' $timer;
+	logToConsole 'Testing environment' $timer;
 	$timer = logToConsole 'Imporitng data';
 	Imports -pfcCompany $pfcCompany ;
 	logToConsole 'Imporitng data' $timer;
